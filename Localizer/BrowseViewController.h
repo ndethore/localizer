@@ -17,6 +17,6 @@
 
 @interface BrowseViewController : NSViewController
 
-@property (assign) id <BrowseViewControllerDelegate> delegate;
+@property (assign) IBOutlet id <BrowseViewControllerDelegate> delegate;
 
 @end
