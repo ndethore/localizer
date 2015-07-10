@@ -9,9 +9,10 @@
 /* Begin PBXBuildFile section */
 		3779DFB81B4E82CB00569E21 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3779DFB71B4E82CB00569E21 /* AppDelegate.m */; };
 		3779DFBB1B4E82CB00569E21 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3779DFBA1B4E82CB00569E21 /* main.m */; };
-		3779DFBE1B4E82CB00569E21 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3779DFBD1B4E82CB00569E21 /* ViewController.m */; };
 		3779DFC01B4E82CB00569E21 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3779DFBF1B4E82CB00569E21 /* Assets.xcassets */; };
 		3779DFC31B4E82CB00569E21 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3779DFC11B4E82CB00569E21 /* Main.storyboard */; };
+		3779DFD11B4E885A00569E21 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3779DFCE1B4E885A00569E21 /* Cocoa.framework */; };
+		3779DFDA1B4E8D1100569E21 /* BrowseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3779DFD91B4E8D1100569E21 /* BrowseViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,11 +20,14 @@
 		3779DFB61B4E82CB00569E21 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		3779DFB71B4E82CB00569E21 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		3779DFBA1B4E82CB00569E21 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		3779DFBC1B4E82CB00569E21 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		3779DFBD1B4E82CB00569E21 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		3779DFBF1B4E82CB00569E21 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3779DFC21B4E82CB00569E21 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		3779DFC41B4E82CB00569E21 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3779DFCD1B4E885A00569E21 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		3779DFCE1B4E885A00569E21 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		3779DFCF1B4E885A00569E21 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		3779DFD81B4E8D1100569E21 /* BrowseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BrowseViewController.h; sourceTree = "<group>"; };
+		3779DFD91B4E8D1100569E21 /* BrowseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BrowseViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,6 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3779DFD11B4E885A00569E21 /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -42,6 +47,7 @@
 			children = (
 				3779DFB51B4E82CB00569E21 /* Localizer */,
 				3779DFB41B4E82CB00569E21 /* Products */,
+				3779DFD31B4E886100569E21 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -58,8 +64,8 @@
 			children = (
 				3779DFB61B4E82CB00569E21 /* AppDelegate.h */,
 				3779DFB71B4E82CB00569E21 /* AppDelegate.m */,
-				3779DFBC1B4E82CB00569E21 /* ViewController.h */,
-				3779DFBD1B4E82CB00569E21 /* ViewController.m */,
+				3779DFD81B4E8D1100569E21 /* BrowseViewController.h */,
+				3779DFD91B4E8D1100569E21 /* BrowseViewController.m */,
 				3779DFBF1B4E82CB00569E21 /* Assets.xcassets */,
 				3779DFC11B4E82CB00569E21 /* Main.storyboard */,
 				3779DFC41B4E82CB00569E21 /* Info.plist */,
@@ -74,6 +80,24 @@
 				3779DFBA1B4E82CB00569E21 /* main.m */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		3779DFD31B4E886100569E21 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3779DFCE1B4E885A00569E21 /* Cocoa.framework */,
+				3779DFD41B4E88A200569E21 /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		3779DFD41B4E88A200569E21 /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3779DFCD1B4E885A00569E21 /* AppKit.framework */,
+				3779DFCF1B4E885A00569E21 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -145,9 +169,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3779DFBE1B4E82CB00569E21 /* ViewController.m in Sources */,
 				3779DFBB1B4E82CB00569E21 /* main.m in Sources */,
 				3779DFB81B4E82CB00569E21 /* AppDelegate.m in Sources */,
+				3779DFDA1B4E8D1100569E21 /* BrowseViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -287,6 +311,7 @@
 				3779DFC91B4E82CB00569E21 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

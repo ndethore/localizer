@@ -1,0 +1,22 @@
+//
+//  BrowseViewController.h
+//  Localizer
+//
+//  Created by Nicolas on 7/9/15.
+//  Copyright © 2015 LYCL inc. All rights reserved.
+//
+
+#import <Cocoa/Cocoa.h>
+
+@protocol BrowseViewControllerDelegate <NSObject>
+
+@optional
+- (void)didTapSearchButton:(NSButton *)button withProjectPath:(NSString *)path;
+
+@end
+
+@interface BrowseViewController : NSViewController
+
+@property (assign) id <BrowseViewControllerDelegate> delegate;
+
+@end
