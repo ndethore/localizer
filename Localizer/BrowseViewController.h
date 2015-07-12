@@ -15,7 +15,7 @@
 
 @end
 
-@interface BrowseViewController : NSViewController
+@interface BrowseViewController : NSViewController <NSTableViewDataSource, NSTableViewDelegate>
 
 @property (assign) IBOutlet id <BrowseViewControllerDelegate> delegate;
 

@@ -13,10 +13,13 @@
 @interface BrowseViewController () <ProjectScannerDelegate, FilterViewControllerDelegate>
 
 @property (nonatomic, strong) ProjectScanner *scanner;
+@property (nonatomic, strong) NSMutableArray *lines;
 @property (nonatomic, strong) NSMutableArray *strings;
 
 @property (assign) IBOutlet NSTextField         *pathTextField;
 @property (assign) IBOutlet NSButton            *browseButton;
+@property (assign) IBOutlet NSTableView			*tableView;
+@property (assign) IBOutlet NSTextField			*statusLabel;
 @property (assign) IBOutlet NSButton            *searchButton;
 @property (assign) IBOutlet NSProgressIndicator *processIndicator;
 
@@ -26,16 +29,22 @@
 @end
 
 static NSString *const kFilterSegueIndentifier = @"showFilterViewController";
+static NSString *const kTableColumnString = @"String";
+static NSString *const kTableColumnKey = @"Key";
+
 
 @implementation BrowseViewController
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	
+	_lines = [[NSMutableArray alloc] init];
 	_strings = [[NSMutableArray alloc] init];
 	self.scanner = [[ProjectScanner alloc] init];
 	[self.scanner setDelegate:self];
 }
+
+#pragma mark - Actions
 
 - (IBAction)browseButtonSelected:(id)sender {
 	// Show an open panel
@@ -126,7 +135,7 @@ static NSString *const kFilterSegueIndentifier = @"showFilterViewController";
 - (void)scanner:(ProjectScanner *)scanner didFinishScanning:(NSArray *)results {
 	
 	NSLog(@"%ld strings found", results.count);
-	self.strings = [results mutableCopy];
+	self.lines = [results mutableCopy];
 	[self setUIEnabled:YES];
 	
 	[self performSegueWithIdentifier:kFilterSegueIndentifier sender:self];
@@ -136,11 +145,33 @@ static NSString *const kFilterSegueIndentifier = @"showFilterViewController";
 
 - (void)didCancelFiltering {
 	NSLog(@"Did cancel filtering !");
+	
+	[self extractStrings];
 }
 
 - (void)didFinishFilteringWithArray:(NSArray*)array {
 	NSLog(@"Did finish filtering !");
+	
+	self.lines = [array mutableCopy];
+	[self extractStrings];
 }
+
+#pragma mark - <NSTableViewDelegate>
+
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView {
+	return [self.strings count];
+}
+
+- (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex {
+	
+	NSString *text;
+	
+	NSString *columnIndentifier = [tableColumn identifier];
+	if ([columnIndentifier isEqualToString:kTableColumnString]) text = [self.strings objectAtIndex:rowIndex];
+	
+	return text;
+}
+
 
 #pragma mark - Navigation
 
@@ -150,8 +181,32 @@ static NSString *const kFilterSegueIndentifier = @"showFilterViewController";
 		
 		FilterViewController *filterVC = [segue destinationController];
 		[filterVC setDelegate:self];
-		[filterVC setDataSource:self.strings];
+		[filterVC setDataSource:self.lines];
 	}
+}
+
+#pragma mark - Result Processing
+
+- (void)extractStrings {
+	
+	for (NSString *line in self.lines) {
+		
+		NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"\"[^\"]+\"" options:0 error:nil];
+		NSArray *matches = [regex matchesInString:line options:0 range:NSMakeRange(0, line.length)];
+
+		for (NSTextCheckingResult *result in matches) {
+		
+			NSString *string = [line substringWithRange:result.range];
+			
+			if (![self.strings containsObject:string]) {
+				[self.strings addObject:string];
+			}
+		}
+	}
+	
+	[self.statusLabel setHidden:NO];
+	[self.statusLabel setStringValue:[NSString stringWithFormat:@"%ld strings found.", self.strings.count]];
+	[self.tableView reloadData];
 }
 
 @end
