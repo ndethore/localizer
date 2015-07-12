@@ -8,11 +8,12 @@
 
 #import "BrowseViewController.h"
 #import "ProjectScanner.h"
+#import "FilterViewController.h"
 
-@interface BrowseViewController () <ProjectScannerDelegate>
+@interface BrowseViewController () <ProjectScannerDelegate, FilterViewControllerDelegate>
 
 @property (nonatomic, strong) ProjectScanner *scanner;
-@property (nonatomic, strong) NSMutableArray *results;
+@property (nonatomic, strong) NSMutableArray *strings;
 
 @property (assign) IBOutlet NSTextField         *pathTextField;
 @property (assign) IBOutlet NSButton            *browseButton;
@@ -24,12 +25,14 @@
 
 @end
 
+static NSString *const kFilterSegueIndentifier = @"showFilterViewController";
+
 @implementation BrowseViewController
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	
-	_results = [[NSMutableArray alloc] init];
+	_strings = [[NSMutableArray alloc] init];
 	self.scanner = [[ProjectScanner alloc] init];
 	[self.scanner setDelegate:self];
 }
@@ -123,8 +126,32 @@
 - (void)scanner:(ProjectScanner *)scanner didFinishScanning:(NSArray *)results {
 	
 	NSLog(@"%ld strings found", results.count);
+	self.strings = [results mutableCopy];
 	[self setUIEnabled:YES];
+	
+	[self performSegueWithIdentifier:kFilterSegueIndentifier sender:self];
 }
 
+#pragma mark - FilterViewControllerDelegate
+
+- (void)didCancelFiltering {
+	NSLog(@"Did cancel filtering !");
+}
+
+- (void)didFinishFilteringWithArray:(NSArray*)array {
+	NSLog(@"Did finish filtering !");
+}
+
+#pragma mark - Navigation
+
+- (void)prepareForSegue:(nonnull NSStoryboardSegue *)segue sender:(nullable id)sender {
+	
+	if ([segue.identifier isEqualToString:kFilterSegueIndentifier]) {
+		
+		FilterViewController *filterVC = [segue destinationController];
+		[filterVC setDelegate:self];
+		[filterVC setDataSource:self.strings];
+	}
+}
 
 @end
