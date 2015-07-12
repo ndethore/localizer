@@ -154,7 +154,11 @@
 	for (NSString *line in lines) {
 		
 		if ([line rangeOfString:@"@\""].location != NSNotFound) {
-			 [strings addObject:line];
+			
+			NSString *trimmedLine;
+			trimmedLine = [[line mutableCopy] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+			trimmedLine = [[line mutableCopy] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+			[strings addObject:trimmedLine];
 		}
 	}
 	
