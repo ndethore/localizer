@@ -36,6 +36,7 @@
 
 - (void)start {
  
+	
 	// Start the search
 	NSInvocationOperation *searchOperation = [[NSInvocationOperation alloc] initWithTarget:self selector:@selector(runStringSearch:) object:self.projectPath];
 	[_queue addOperation:searchOperation];
@@ -49,6 +50,8 @@
 - (void)runStringSearch:(NSString *)searchPath {
 
 	__weak typeof(self) weakSelf = self;
+	
+	[_results removeAllObjects];
 	
 	NSArray *filePaths;
 	

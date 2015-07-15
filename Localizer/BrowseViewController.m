@@ -127,6 +127,7 @@ static NSString *const kTableColumnKey         = @"Key";
 	
 	self.scanner.projectPath = [self.pathTextField stringValue];
 	
+	[self reset];
 	[self.scanner start];
 }
 
@@ -176,21 +177,25 @@ static NSString *const kTableColumnKey         = @"Key";
 	
 	NSString *text;
 	
-	NSString *columnIndentifier = [tableColumn identifier];
-	if ([columnIndentifier isEqualToString:kTableColumnString]) text = [self.keysDictionary.allKeys objectAtIndex:rowIndex];
-	else if ([columnIndentifier isEqualToString:kTableColumnKey]) text = [self.keysDictionary.allValues objectAtIndex:rowIndex];
-	else if ([columnIndentifier isEqualToString:kTableColumnFile]) {
-		
-		
-		NSArray *paths = [self.stringsIndex.allValues objectAtIndex:rowIndex];
-		NSMutableString *pathsList = [[NSMutableString alloc] init];
-		
-		for (NSString *path in paths) {
-			NSURL *url = [NSURL URLWithString:path];
-			[pathsList appendFormat:@"%@;", [url lastPathComponent]];
+	if (self.stringsIndex.count > 0
+		 && self.keysDictionary.count > 0) {
+
+		NSString *columnIndentifier = [tableColumn identifier];
+		if ([columnIndentifier isEqualToString:kTableColumnString]) text = [self.keysDictionary.allKeys objectAtIndex:rowIndex];
+		else if ([columnIndentifier isEqualToString:kTableColumnKey]) text = [self.keysDictionary.allValues objectAtIndex:rowIndex];
+		else if ([columnIndentifier isEqualToString:kTableColumnFile]) {
+			
+			
+			NSArray *paths = [self.stringsIndex.allValues objectAtIndex:rowIndex];
+			NSMutableString *pathsList = [[NSMutableString alloc] init];
+			
+			for (NSString *path in paths) {
+				NSURL *url = [NSURL URLWithString:path];
+				[pathsList appendFormat:@"%@;", [url lastPathComponent]];
+			}
+			
+			text = pathsList;
 		}
-		
-		text = pathsList;
 	}
 	
 	return text;
@@ -238,6 +243,13 @@ static NSString *const kTableColumnKey         = @"Key";
 	}
 	
 	[self.tableView reloadData];
+}
+
+- (void)reset {
+	
+	[self.keysDictionary removeAllObjects];
+	self.fileIndex = nil;
+	self.stringsIndex = nil;
 }
 
 - (NSDictionary *)stringsIndexFromFileIndex:(NSDictionary *)fileIndex {
