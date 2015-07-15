@@ -31,6 +31,7 @@
 
 static NSString *const kFilterSegueIndentifier = @"showFilterViewController";
 static NSString *const kTableColumnString      = @"String";
+static NSString *const kTableColumnFile        = @"File";
 static NSString *const kTableColumnKey         = @"Key";
 
 
@@ -178,6 +179,19 @@ static NSString *const kTableColumnKey         = @"Key";
 	NSString *columnIndentifier = [tableColumn identifier];
 	if ([columnIndentifier isEqualToString:kTableColumnString]) text = [self.keysDictionary.allKeys objectAtIndex:rowIndex];
 	else if ([columnIndentifier isEqualToString:kTableColumnKey]) text = [self.keysDictionary.allValues objectAtIndex:rowIndex];
+	else if ([columnIndentifier isEqualToString:kTableColumnFile]) {
+		
+		
+		NSArray *paths = [self.stringsIndex.allValues objectAtIndex:rowIndex];
+		NSMutableString *pathsList = [[NSMutableString alloc] init];
+		
+		for (NSString *path in paths) {
+			NSURL *url = [NSURL URLWithString:path];
+			[pathsList appendFormat:@"%@;", [url lastPathComponent]];
+		}
+		
+		text = pathsList;
+	}
 	
 	return text;
 }
