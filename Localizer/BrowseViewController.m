@@ -12,9 +12,10 @@
 
 @interface BrowseViewController () <ProjectScannerDelegate, FilterViewControllerDelegate>
 
-@property (nonatomic, strong) ProjectScanner *scanner;
-@property (nonatomic, strong) NSMutableArray *lines;
-@property (nonatomic, strong) NSMutableArray *strings;
+@property (nonatomic, strong) ProjectScanner      *scanner;
+@property (nonatomic, strong) NSDictionary        *fileIndex;
+@property (nonatomic, strong) NSDictionary        *stringsIndex;
+@property (nonatomic, strong) NSMutableDictionary *keysDictionary;
 
 @property (assign) IBOutlet NSTextField         *pathTextField;
 @property (assign) IBOutlet NSButton            *browseButton;
@@ -29,17 +30,21 @@
 @end
 
 static NSString *const kFilterSegueIndentifier = @"showFilterViewController";
-static NSString *const kTableColumnString = @"String";
-static NSString *const kTableColumnKey = @"Key";
+static NSString *const kTableColumnString      = @"String";
+static NSString *const kTableColumnKey         = @"Key";
 
 
 @implementation BrowseViewController
 
 - (void)viewDidLoad {
-	[super viewDidLoad];
 	
-	_lines = [[NSMutableArray alloc] init];
-	_strings = [[NSMutableArray alloc] init];
+	[super viewDidLoad];
+	[self initialize];
+}
+
+- (void)initialize {
+	
+	_keysDictionary = [[NSMutableDictionary alloc] init];
 	self.scanner = [[ProjectScanner alloc] init];
 	[self.scanner setDelegate:self];
 }
@@ -59,7 +64,6 @@ static NSString *const kTableColumnKey = @"Key";
 		[self.pathTextField setStringValue:path];
 	}
 	
-	
 }
 
 - (IBAction)searchButtonSelected:(NSButton *)sender {
@@ -69,7 +73,9 @@ static NSString *const kTableColumnKey = @"Key";
 	// Check if user has selected or entered a path
 	BOOL isPathEmpty = [projectPath isEqualToString:@""];
 	if (isPathEmpty) {
-		[self showAlertWithStyle:NSWarningAlertStyle title:NSLocalizedString(@"MissingPathErrorTitle", @"") subtitle:NSLocalizedString(@"ProjectFolderPathErrorMessage", @"")];
+		[self showAlertWithStyle:NSWarningAlertStyle
+								 title:NSLocalizedString(@"MissingPathErrorTitle", @"")
+							 subtitle:NSLocalizedString(@"ProjectFolderPathErrorMessage", @"")];
 		
 		return;
 	}
@@ -77,7 +83,9 @@ static NSString *const kTableColumnKey = @"Key";
 	// Check the path exists
 	BOOL pathExists = [[NSFileManager defaultManager] fileExistsAtPath:projectPath];
 	if (!pathExists) {
-		[self showAlertWithStyle:NSWarningAlertStyle title:NSLocalizedString(@"InvalidPathErrorTitle", @"") subtitle:NSLocalizedString(@"ProjectFolderPathErrorMessage", @"")];
+		[self showAlertWithStyle:NSWarningAlertStyle
+								 title:NSLocalizedString(@"InvalidPathErrorTitle", @"")
+							 subtitle:NSLocalizedString(@"ProjectFolderPathErrorMessage", @"")];
 		
 		return;
 	}
@@ -132,11 +140,10 @@ static NSString *const kTableColumnKey = @"Key";
 	
 }
 
-- (void)scanner:(ProjectScanner *)scanner didFinishScanning:(NSArray *)results {
+- (void)scanner:(ProjectScanner *)scanner didFinishScanning:(NSDictionary *)results {
 	
-	NSLog(@"%ld strings found", results.count);
-	self.lines = [results mutableCopy];
-	[self setUIEnabled:YES];
+	self.fileIndex = results;
+	self.stringsIndex = [self stringsIndexFromFileIndex:results];
 	
 	[self performSegueWithIdentifier:kFilterSegueIndentifier sender:self];
 }
@@ -144,22 +151,24 @@ static NSString *const kTableColumnKey = @"Key";
 #pragma mark - FilterViewControllerDelegate
 
 - (void)didCancelFiltering {
-	NSLog(@"Did cancel filtering !");
 	
-	[self extractStrings];
+
+	[self updateUI];
+	[self setUIEnabled:YES];
 }
 
-- (void)didFinishFilteringWithArray:(NSArray*)array {
-	NSLog(@"Did finish filtering !");
+- (void)didFinishFiltering:(NSDictionary *)results {
 	
-	self.lines = [array mutableCopy];
-	[self extractStrings];
+	self.stringsIndex = results;
+
+	[self updateUI];
+	[self setUIEnabled:YES];
 }
 
 #pragma mark - <NSTableViewDelegate>
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView {
-	return [self.strings count];
+	return [self.keysDictionary.allKeys count];
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex {
@@ -167,11 +176,22 @@ static NSString *const kTableColumnKey = @"Key";
 	NSString *text;
 	
 	NSString *columnIndentifier = [tableColumn identifier];
-	if ([columnIndentifier isEqualToString:kTableColumnString]) text = [self.strings objectAtIndex:rowIndex];
+	if ([columnIndentifier isEqualToString:kTableColumnString]) text = [self.keysDictionary.allKeys objectAtIndex:rowIndex];
+	else if ([columnIndentifier isEqualToString:kTableColumnKey]) text = [self.keysDictionary.allValues objectAtIndex:rowIndex];
 	
 	return text;
 }
 
+
+- (void)tableView:(NSTableView *)aTableView setObjectValue:(id)anObject forTableColumn:(NSTableColumn *)aTableColumn row:(NSInteger)rowIndex {
+	
+	NSString *columnIndentifier = [aTableColumn identifier];
+	
+	if ([columnIndentifier isEqualToString:kTableColumnKey]) {
+		NSString *string = [self.keysDictionary.allKeys objectAtIndex:rowIndex];
+		[self.keysDictionary setObject:anObject forKey:string];
+	}
+}
 
 #pragma mark - Navigation
 
@@ -181,32 +201,67 @@ static NSString *const kTableColumnKey = @"Key";
 		
 		FilterViewController *filterVC = [segue destinationController];
 		[filterVC setDelegate:self];
-		[filterVC setDataSource:self.lines];
+		[filterVC setDataSource:[self.stringsIndex mutableCopy]];
 	}
 }
 
-#pragma mark - Result Processing
+#pragma mark - Private
 
-- (void)extractStrings {
+- (void)updateUI {
+
+	[self updateKeyDictionary];
+	[self.statusLabel setHidden:NO];
+	[self.statusLabel setStringValue:[NSString stringWithFormat:@"%ld strings found.", self.stringsIndex.count]];
+}
+
+- (void)updateKeyDictionary {
 	
-	for (NSString *line in self.lines) {
+	for (NSString *string in self.stringsIndex.allKeys) {
 		
-		NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"\"[^\"]+\"" options:0 error:nil];
-		NSArray *matches = [regex matchesInString:line options:0 range:NSMakeRange(0, line.length)];
-
-		for (NSTextCheckingResult *result in matches) {
-		
-			NSString *string = [line substringWithRange:result.range];
-			
-			if (![self.strings containsObject:string]) {
-				[self.strings addObject:string];
-			}
+		if (![self.keysDictionary.allKeys containsObject:string]) {
+			[self.keysDictionary setObject:@"" forKey:string];
 		}
 	}
 	
-	[self.statusLabel setHidden:NO];
-	[self.statusLabel setStringValue:[NSString stringWithFormat:@"%ld strings found.", self.strings.count]];
 	[self.tableView reloadData];
 }
+
+- (NSDictionary *)stringsIndexFromFileIndex:(NSDictionary *)fileIndex {
+	
+	NSMutableDictionary *stringsIndex = [[NSMutableDictionary alloc] init];
+	
+	for (NSString *filePath in fileIndex.allKeys) {
+		
+		for (NSString *line in [fileIndex objectForKey:filePath]) {
+		
+			// Extract the (multiple) string in a line.
+			NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"@\"[^\"]+\"" options:0 error:nil];
+			NSArray *matches = [regex matchesInString:line options:0 range:NSMakeRange(0, line.length)];
+			
+			// Iterate trough the diffent strings found
+			for (NSTextCheckingResult *result in matches) {
+				
+				NSString *string = [line substringWithRange:result.range];
+				
+				if (![stringsIndex.allKeys containsObject:string]) {
+					// "New" string, let's add it to the clean index along with file it belongs to.
+					NSMutableArray *referenceFilePaths = [NSMutableArray arrayWithObject:filePath];
+					[stringsIndex setObject:referenceFilePaths forKey:string];
+					
+				}
+				else {
+					// Existing string, let's only add the file to which it belongs to.
+					NSMutableArray *referenceFilePaths = [stringsIndex objectForKey:string];
+					if (![referenceFilePaths containsObject:filePath]) {
+						[referenceFilePaths addObject:filePath];
+					}
+					[stringsIndex setObject:referenceFilePaths forKey:string];
+				}
+			}
+		}
+	}
+	return stringsIndex;
+}
+
 
 @end

@@ -15,7 +15,7 @@
 @optional
 - (void)scannerDidStartScanning:(ProjectScanner *)scanner;
 - (void)scanner:(ProjectScanner *)scanner didFindStringToLocalize:(NSString *)string;
-- (void)scanner:(ProjectScanner *)scanner didFinishScanning:(NSArray *)results;
+- (void)scanner:(ProjectScanner *)scanner didFinishScanning:(NSDictionary*)results;
 
 @end
 

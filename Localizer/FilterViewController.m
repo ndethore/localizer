@@ -30,7 +30,7 @@
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex {
 	
-	NSString *text = [self.dataSource objectAtIndex:rowIndex];
+	NSString *text = [self.dataSource.allKeys objectAtIndex:rowIndex];
 	
 	return text;
 }
@@ -39,8 +39,8 @@
 
 - (IBAction)nextButtonSelected:(id)sender {
 	
-	if (self.delegate && [self.delegate respondsToSelector:@selector(didFinishFilteringWithArray:)]) {
-		[self.delegate didFinishFilteringWithArray:self.dataSource];
+	if (self.delegate && [self.delegate respondsToSelector:@selector(didFinishFiltering:)]) {
+		[self.delegate didFinishFiltering:self.dataSource];
 	}
 	[self dismissController:self];
 }
@@ -55,12 +55,10 @@
 - (IBAction)removeButtonSelected:(id)sender {
 	
 	NSIndexSet *selectedRows = [self.tableView selectedRowIndexes];
+
+	NSArray *keys = [self.dataSource.allKeys objectsAtIndexes:selectedRows];
+	[self.dataSource removeObjectsForKeys:keys];
 	
-	[self.dataSource removeObjectsAtIndexes:selectedRows];
-	
-//	[self.tableView beginUpdates];
-//	[self.tableView removeRowsAtIndexes:selectedRows withAnimation:NSTableViewAnimationEffectFade];
-//	[self.tableView endUpdates];
 	[self.tableView reloadData];
 }
 

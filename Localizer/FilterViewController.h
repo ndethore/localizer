@@ -11,13 +11,13 @@
 @protocol FilterViewControllerDelegate <NSObject>
 
 - (void)didCancelFiltering;
-- (void)didFinishFilteringWithArray:(NSArray*)array;
+- (void)didFinishFiltering:(NSDictionary *)results;
 
 @end
 
 @interface FilterViewController : NSViewController
 
 @property (assign) IBOutlet id <FilterViewControllerDelegate> delegate;
-@property (nonatomic, strong) NSMutableArray *dataSource;
+@property (nonatomic, strong) NSMutableDictionary *dataSource;
 
 @end

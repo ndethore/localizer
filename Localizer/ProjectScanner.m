@@ -10,7 +10,7 @@
 
 @interface ProjectScanner() {
 	
-	NSMutableArray *_results;
+	NSMutableDictionary *_results;
 
 	NSOperationQueue *_queue;
 
@@ -23,7 +23,7 @@
 	if (self = [super init]) {
 		
 		// Setup the results array
-		_results = [[NSMutableArray alloc] init];
+		_results = [[NSMutableDictionary alloc] init];
 		
 		// Setup the queue
 		_queue = [[NSOperationQueue alloc] init];
@@ -42,7 +42,6 @@
 }
 
 - (void)stop {
-	
 }
 
 #pragma mark - Private
@@ -57,10 +56,7 @@
 		[self.delegate scannerDidStartScanning:self];
 	}
 	
-	NSLog(@"Searching for .m files...");
 	filePaths = [self getProjectImplementationFilesPaths];
-	NSLog(@"%ld .m files found.", filePaths.count);
-	NSLog(@"%@", filePaths);
 	
 	dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
 	dispatch_group_t group = dispatch_group_create();
@@ -71,44 +67,47 @@
 		
 			NSString *path = (NSString *)obj;
 			
-			NSArray *strings = [weakSelf stringsInFile:path];
-
-			for (NSString *string in strings) {
+			NSArray *lines = [weakSelf linesContainingStringsInFileAtPath:path];
+			NSMutableArray *relevantLines = [[NSMutableArray alloc] init];
+			
+			for (NSString *line in lines) {
 				
-				if (string) {
-					if (![string containsString:@"#define"] &&
-						 ![string containsString:@"NSLog"] &&
-						 ![string containsString:@"DLog"] &&
-						 ![string containsString:@"SLog"] &&
-						 ![string containsString:@"Image"] &&
-						 ![string containsString:@"image"] &&
-						 ![string containsString:@"initWithNibName"] &&
-						 ![string containsString:@"const"] &&
-						 ![string containsString:@"orKey"] &&
-						 ![string containsString:@"@\"\""] &&
-						 ![string containsString:@"@\"%@\""] &&
-						 ![string containsString:@"@\"%@\""] &&
-						 ![string containsString:@"Dictionary"] &&
-						 ![string containsString:@"Date"] &&
-						 ![string containsString:@"\":@\""] &&
-						 ![string containsString:@"path"] &&
-						 ![string containsString:@"@\"0\""] &&
-						 ![string containsString:@"Log"] &&
-						 ![string containsString:@"log"]) {
+				if (line) {
+					// Warning : We might dismiss lines such as @"", @"Interesting Text!"....
+					// Check if multiple strings in a single line.
+
+					if (![line containsString:@"#define"] &&
+						 ![line containsString:@"NSLog"] &&
+						 ![line containsString:@"DLog"] &&
+						 ![line containsString:@"SLog"] &&
+						 ![line containsString:@"Image"] &&
+						 ![line containsString:@"image"] &&
+						 ![line containsString:@"initWithNibName"] &&
+						 ![line containsString:@"const"] &&
+						 ![line containsString:@"orKey"] &&
+						 ![line containsString:@"@\"\""] &&
+						 ![line containsString:@"@\"%@\""] &&
+						 ![line containsString:@"@\"%@\""] &&
+						 ![line containsString:@"Dictionary"] &&
+						 ![line containsString:@"Date"] &&
+						 ![line containsString:@"\":@\""] &&
+						 ![line containsString:@"path"] &&
+						 ![line containsString:@"@\"0\""] &&
+						 ![line containsString:@"Log"] &&
+						 ![line containsString:@"log"]) {
 						
-						[_results addObject:string];
-						NSLog(@"Added \"%@\"", string);
+						NSLog(@"Added \"%@\"", line);
+						
+						[relevantLines addObject:line];
 					}
 				}
 			}
-			
+			[_results setValue:relevantLines forKey:path];
 		});
 		
 	}];
 	dispatch_group_notify(group, queue, ^{
 		dispatch_async(dispatch_get_main_queue(), ^{
-			
-			[_results sortUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
 			
 			if (self.delegate && [self.delegate respondsToSelector:@selector(scanner:didFinishScanning:)]) {
 				[self.delegate scanner:self didFinishScanning:_results];
@@ -144,7 +143,7 @@
 	return lines;
 }
 
--(NSArray *)stringsInFile:(NSString *)filePath {
+-(NSArray *)linesContainingStringsInFileAtPath:(NSString *)filePath {
 	
 	NSMutableArray *strings = [[NSMutableArray alloc] init];
 
