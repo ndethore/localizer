@@ -59,6 +59,7 @@
 	NSArray *keys = [self.dataSource.allKeys objectsAtIndexes:selectedRows];
 	[self.dataSource removeObjectsForKeys:keys];
 	
+	[self.tableView deselectAll:self];
 	[self.tableView reloadData];
 }
 
