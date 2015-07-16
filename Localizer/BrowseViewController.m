@@ -8,11 +8,13 @@
 
 #import "BrowseViewController.h"
 #import "ProjectScanner.h"
+#import "ProjectPatcher.h"
 #import "FilterViewController.h"
 
-@interface BrowseViewController () <ProjectScannerDelegate, FilterViewControllerDelegate>
+@interface BrowseViewController () <ProjectScannerDelegate, ProjectPatcherDelegate, FilterViewControllerDelegate>
 
 @property (nonatomic, strong) ProjectScanner      *scanner;
+@property (nonatomic, strong) ProjectPatcher      *patcher;
 @property (nonatomic, strong) NSDictionary        *fileIndex;
 @property (nonatomic, strong) NSDictionary        *stringsIndex;
 @property (nonatomic, strong) NSMutableDictionary *keysDictionary;
@@ -47,7 +49,10 @@ static NSString *const kTableColumnKey         = @"Key";
 	
 	_keysDictionary = [[NSMutableDictionary alloc] init];
 	self.scanner = [[ProjectScanner alloc] init];
+	self.patcher = [[ProjectPatcher alloc] init];
+	
 	[self.scanner setDelegate:self];
+	[self.patcher setDelegate:self];
 }
 
 #pragma mark - Actions
@@ -92,6 +97,12 @@ static NSString *const kTableColumnKey         = @"Key";
 	}
 
 	[self scanPath];
+}
+
+- (IBAction)replaceButtonSelected:(id)sender {
+	
+	[self.patcher patchStrings:self.stringsIndex withKeys:self.keysDictionary];
+	
 }
 
 #pragma mark - Helpers
@@ -148,6 +159,20 @@ static NSString *const kTableColumnKey         = @"Key";
 	self.stringsIndex = [self stringsIndexFromFileIndex:results];
 	
 	[self performSegueWithIdentifier:kFilterSegueIndentifier sender:self];
+}
+
+#pragma mark - ProjectScannerDelegate
+
+- (void)patcherDidStartPatching:(ProjectPatcher *)patcher {
+	NSLog(@"Patching started.");	
+}
+
+- (void)patcher:(ProjectPatcher *)patcher didPatchString:(NSString *)string {
+	
+}
+
+- (void)patcherDidFinishPatching:(ProjectPatcher *)patcher {
+	NSLog(@"Patching completed.");
 }
 
 #pragma mark - FilterViewControllerDelegate

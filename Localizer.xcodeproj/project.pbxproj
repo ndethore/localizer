@@ -15,6 +15,7 @@
 		3779DFDA1B4E8D1100569E21 /* BrowseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3779DFD91B4E8D1100569E21 /* BrowseViewController.m */; };
 		3779DFE01B4F985500569E21 /* ProjectScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 3779DFDF1B4F985500569E21 /* ProjectScanner.m */; };
 		3779DFE31B52327200569E21 /* FilterViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3779DFE21B52327200569E21 /* FilterViewController.m */; };
+		379429081B566A41003C8103 /* ProjectPatcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 379429071B566A41003C8103 /* ProjectPatcher.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,8 @@
 		3779DFDF1B4F985500569E21 /* ProjectScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProjectScanner.m; sourceTree = "<group>"; };
 		3779DFE11B52327200569E21 /* FilterViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FilterViewController.h; sourceTree = "<group>"; };
 		3779DFE21B52327200569E21 /* FilterViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FilterViewController.m; sourceTree = "<group>"; };
+		379429061B566A41003C8103 /* ProjectPatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProjectPatcher.h; sourceTree = "<group>"; };
+		379429071B566A41003C8103 /* ProjectPatcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProjectPatcher.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +83,8 @@
 				3779DFDF1B4F985500569E21 /* ProjectScanner.m */,
 				3779DFE11B52327200569E21 /* FilterViewController.h */,
 				3779DFE21B52327200569E21 /* FilterViewController.m */,
+				379429061B566A41003C8103 /* ProjectPatcher.h */,
+				379429071B566A41003C8103 /* ProjectPatcher.m */,
 			);
 			path = Localizer;
 			sourceTree = "<group>";
@@ -180,6 +185,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3779DFE01B4F985500569E21 /* ProjectScanner.m in Sources */,
+				379429081B566A41003C8103 /* ProjectPatcher.m in Sources */,
 				3779DFBB1B4E82CB00569E21 /* main.m in Sources */,
 				3779DFE31B52327200569E21 /* FilterViewController.m in Sources */,
 				3779DFB81B4E82CB00569E21 /* AppDelegate.m in Sources */,

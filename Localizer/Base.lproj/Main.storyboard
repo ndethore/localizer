@@ -808,7 +808,7 @@
                                     </subviews>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </clipView>
-                                <scroller key="horizontalScroller" verticalHuggingPriority="750" doubleValue="0.25" horizontal="YES" id="96N-2B-nDY">
+                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="0.33333333333333331" horizontal="YES" id="96N-2B-nDY">
                                     <rect key="frame" x="1" y="2" width="0.0" height="15"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
@@ -821,6 +821,16 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableHeaderView>
                             </scrollView>
+                            <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7AT-lW-DCR">
+                                <rect key="frame" x="381" y="13" width="96" height="32"/>
+                                <buttonCell key="cell" type="push" title="Replace" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1cN-1Z-yfg">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="replaceButtonSelected:" target="XfG-lQ-9wD" id="FYq-L9-gYM"/>
+                                </connections>
+                            </button>
                         </subviews>
                     </view>
                     <connections>
@@ -946,7 +956,7 @@ DQ
                                     </subviews>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </clipView>
-                                <scroller key="horizontalScroller" verticalHuggingPriority="750" doubleValue="0.0017391304347826088" horizontal="YES" id="uoS-0X-FPl">
+                                <scroller key="horizontalScroller" verticalHuggingPriority="750" doubleValue="0.0017421602787456446" horizontal="YES" id="uoS-0X-FPl">
                                     <rect key="frame" x="1" y="191" width="428" height="16"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
