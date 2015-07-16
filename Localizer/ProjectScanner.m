@@ -65,47 +65,37 @@
 	dispatch_group_t group = dispatch_group_create();
 
 	[filePaths enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-	
-		dispatch_group_async(group, queue, ^{
 		
+		dispatch_group_async(group, queue, ^{
+			
 			NSString *path = (NSString *)obj;
 			
-			NSArray *lines = [weakSelf linesContainingStringsInFileAtPath:path];
-			NSMutableArray *relevantLines = [[NSMutableArray alloc] init];
-			
-			for (NSString *line in lines) {
+			if (path) {
+				NSArray *lines = [weakSelf linesContainingStringsInFileAtPath:path];
+				NSMutableArray *relevantStrings = [[NSMutableArray alloc] init];
 				
-				if (line) {
-					// Warning : We might dismiss lines such as @"", @"Interesting Text!"....
-					// Check if multiple strings in a single line.
-
-					if (![line containsString:@"#define"] &&
-						 ![line containsString:@"NSLog"] &&
-						 ![line containsString:@"DLog"] &&
-						 ![line containsString:@"SLog"] &&
-						 ![line containsString:@"Image"] &&
-						 ![line containsString:@"image"] &&
-						 ![line containsString:@"initWithNibName"] &&
-						 ![line containsString:@"const"] &&
-						 ![line containsString:@"orKey"] &&
-						 ![line containsString:@"@\"\""] &&
-						 ![line containsString:@"@\"%@\""] &&
-						 ![line containsString:@"@\"%@\""] &&
-						 ![line containsString:@"Dictionary"] &&
-						 ![line containsString:@"Date"] &&
-						 ![line containsString:@"\":@\""] &&
-						 ![line containsString:@"path"] &&
-						 ![line containsString:@"@\"0\""] &&
-						 ![line containsString:@"Log"] &&
-						 ![line containsString:@"log"]) {
+				for (NSString *line in lines) {
+					
+					if (line && ![self shouldIgnoreLine:line]) {
 						
-						NSLog(@"Added \"%@\"", line);
+						NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"@\"[^\"]+\"" options:0 error:nil];
+						NSArray *matches = [regex matchesInString:line options:0 range:NSMakeRange(0, line.length)];
 						
-						[relevantLines addObject:line];
+						// Iterate trough the diffent strings found
+						for (NSTextCheckingResult *result in matches) {
+							
+							NSString *string = [line substringWithRange:result.range];
+							
+							if (![self shouldIgnoreString:string]) {
+								
+								[relevantStrings addObject:string];
+								NSLog(@"Added \"%@\"", line);
+							}
+						}
 					}
 				}
+				[_results setValue:relevantStrings forKey:path];
 			}
-			[_results setValue:relevantLines forKey:path];
 		});
 		
 	}];
@@ -117,15 +107,15 @@
 			}
 		});
 	});
-
+	
 }
 
 - (NSArray *)getProjectImplementationFilesPaths {
-
+	
 	// Create a find task
 	NSTask *task = [[NSTask alloc] init];
 	[task setLaunchPath: @"/usr/bin/find"];
-
+	
 	NSArray *argvals = [NSArray arrayWithObjects:self.projectPath, @"-name", @"*.m", nil];
 	[task setArguments: argvals];
 	
@@ -149,7 +139,7 @@
 -(NSArray *)linesContainingStringsInFileAtPath:(NSString *)filePath {
 	
 	NSMutableArray *strings = [[NSMutableArray alloc] init];
-
+	
 	NSString *fileContents = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
 	NSArray	*lines = [fileContents componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]];
 	
@@ -165,6 +155,45 @@
 	}
 	
 	return strings;
+}
+
+- (BOOL)shouldIgnoreLine:(NSString *)line {
+	
+	BOOL shouldIgnore = YES;
+	
+	if (![line containsString:@"#define"] &&
+		 ![line containsString:@"NSLog"] &&
+		 ![line containsString:@"DLog"] &&
+		 ![line containsString:@"SLog"] &&
+		 ![line containsString:@"Image"] &&
+		 ![line containsString:@"image"] &&
+		 ![line containsString:@"initWithNibName"] &&
+		 ![line containsString:@"const"] &&
+		 ![line containsString:@"orKey"] &&
+		 ![line containsString:@"Dictionary"] &&
+		 ![line containsString:@"Date"] &&
+		 ![line containsString:@"\":@\""] &&
+		 ![line containsString:@"path"] &&
+		 ![line containsString:@"Log"] &&
+		 ![line containsString:@"log"]) {
+		
+		shouldIgnore = NO;
+	}
+	
+	return shouldIgnore;
+}
+
+- (BOOL)shouldIgnoreString:(NSString *)string {
+	
+	BOOL shouldIgnore = YES;
+	
+	if (![string isEqualToString:@"@\"\""] &&
+		 ![string isEqualToString:@"@\"0\""] &&
+		 ![string isEqualToString:@"@\"%@\""]) {
+		
+		shouldIgnore = NO;
+	}
+	return shouldIgnore;
 }
 
 @end

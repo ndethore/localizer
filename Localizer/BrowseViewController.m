@@ -164,7 +164,7 @@ static NSString *const kTableColumnKey         = @"Key";
 #pragma mark - ProjectScannerDelegate
 
 - (void)patcherDidStartPatching:(ProjectPatcher *)patcher {
-	NSLog(@"Patching started.");	
+	NSLog(@"Patching started.");
 }
 
 - (void)patcher:(ProjectPatcher *)patcher didPatchString:(NSString *)string {
@@ -279,39 +279,29 @@ static NSString *const kTableColumnKey         = @"Key";
 
 - (NSDictionary *)stringsIndexFromFileIndex:(NSDictionary *)fileIndex {
 	
-	NSMutableDictionary *stringsIndex = [[NSMutableDictionary alloc] init];
+	NSMutableDictionary *index = [[NSMutableDictionary alloc] init];
 	
 	for (NSString *filePath in fileIndex.allKeys) {
 		
-		for (NSString *line in [fileIndex objectForKey:filePath]) {
-		
-			// Extract the (multiple) string in a line.
-			NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"@\"[^\"]+\"" options:0 error:nil];
-			NSArray *matches = [regex matchesInString:line options:0 range:NSMakeRange(0, line.length)];
+		for (NSString *string in [fileIndex objectForKey:filePath]) {
 			
-			// Iterate trough the diffent strings found
-			for (NSTextCheckingResult *result in matches) {
+			if (![index.allKeys containsObject:string]) {
+				// "New" string, let's add it to the clean index along with file it belongs to.
+				NSMutableArray *referenceFilePaths = [NSMutableArray arrayWithObject:filePath];
+				[index setObject:referenceFilePaths forKey:string];
 				
-				NSString *string = [line substringWithRange:result.range];
-				
-				if (![stringsIndex.allKeys containsObject:string]) {
-					// "New" string, let's add it to the clean index along with file it belongs to.
-					NSMutableArray *referenceFilePaths = [NSMutableArray arrayWithObject:filePath];
-					[stringsIndex setObject:referenceFilePaths forKey:string];
-					
+			}
+			else {
+				// Existing string, let's only add the file to which it belongs to.
+				NSMutableArray *referenceFilePaths = [index objectForKey:string];
+				if (![referenceFilePaths containsObject:filePath]) {
+					[referenceFilePaths addObject:filePath];
 				}
-				else {
-					// Existing string, let's only add the file to which it belongs to.
-					NSMutableArray *referenceFilePaths = [stringsIndex objectForKey:string];
-					if (![referenceFilePaths containsObject:filePath]) {
-						[referenceFilePaths addObject:filePath];
-					}
-					[stringsIndex setObject:referenceFilePaths forKey:string];
-				}
+				[index setObject:referenceFilePaths forKey:string];
 			}
 		}
 	}
-	return stringsIndex;
+	return index;
 }
 
 
