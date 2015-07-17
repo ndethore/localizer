@@ -7,6 +7,7 @@
 //
 
 #import "ProjectPatcher.h"
+#import "NSString+Utility.h"
 
 @implementation ProjectPatcher
 
@@ -26,13 +27,20 @@
 		dispatch_group_async(group, queue, ^{
 			
 			NSString *string = (NSString *)obj;
-			NSString *key = [keysDictionary objectForKey:string];
-			if (key.length == 0) key = string;
-			NSString *localizedString  = [self generateLocalizedStringWithKey:key andDefaultValue:string];
+			NSString *key = [keysDictionary objectForKey:string];;
+			NSString *localizedString = [self generateLocalizedStringWithKey:key andDefaultValue:[string localizedValue]];
+			
+			if ([string isLocalizedString]) {
+				key = [keysDictionary objectForKey:[string localizedValue]];
+				localizedString = [self generateLocalizedStringWithKey:key andDefaultValue:[string localizedValue]];
+			}
+
 			
 			NSArray *paths = [stringIndex objectForKey:string];
 			for (NSString *path in paths) {
-				[weakSelf replaceString:string withString:localizedString inFileAtPath:path];
+				if ([weakSelf replaceString:string withString:localizedString inFileAtPath:path]) {
+					NSLog(@"\"%@\"->\"%@\"",	string, localizedString);
+				}
 			}
 			
 			if (self.delegate && [self.delegate respondsToSelector:@selector(patcher:didPatchString:)]) {
@@ -52,13 +60,13 @@
 
 }
 
-- (BOOL)replaceString:(NSString *)old withString:(NSString *)new inFileAtPath:(NSString *)path {
+- (BOOL)replaceString:(NSString *)oldString withString:(NSString *)newString inFileAtPath:(NSString *)path {
 	
 	// Create a find task
 	NSTask *task = [[NSTask alloc] init];
 	[task setLaunchPath: @"/usr/bin/sed"];
 	
-	NSArray *argvals = [NSArray arrayWithObjects: @"-i.back", [NSString stringWithFormat:@"s/%@/%@/g", old, new], path, nil];
+	NSArray *argvals = [NSArray arrayWithObjects:@"-i.back", [NSString stringWithFormat:@"s/%@/%@/", [oldString escapedString], [newString escapedString]], path, nil];
 	[task setArguments: argvals];
 	
 	NSPipe *pipe = [NSPipe pipe];
@@ -71,13 +79,14 @@
 	// Read the response
 	NSData *data = [file readDataToEndOfFile];
 	NSString *string = [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
-	
-	return string.length > 0;
+	NSLog(@"RESPONSE:%@", string);
+	return !(string.length > 0);
 }
 
 - (NSString *)generateLocalizedStringWithKey:(NSString *)key andDefaultValue:(NSString *)value {
 	
 	return [NSString stringWithFormat:@"NSLocalizedStringWithDefaultValue(%@, nil, [NSBundle mainBundle], %@, nil)", key, value];
 }
+
 
 @end

@@ -7,12 +7,12 @@
 //
 
 #import "ProjectScanner.h"
+#import "NSString+Utility.h"
 
 @interface ProjectScanner() {
 	
-	NSMutableDictionary *_results;
-
-	NSOperationQueue *_queue;
+	NSMutableDictionary	*_results;
+	NSOperationQueue		*_queue;
 
 }
 @end
@@ -43,6 +43,7 @@
 }
 
 - (void)stop {
+#pragma todo implement
 }
 
 #pragma mark - Private
@@ -78,27 +79,25 @@
 					
 					if (line && ![self shouldIgnoreLine:line]) {
 						
-						NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"@\"[^\"]+\"" options:0 error:nil];
-						NSArray *matches = [regex matchesInString:line options:0 range:NSMakeRange(0, line.length)];
-						
-						// Iterate trough the diffent strings found
-						for (NSTextCheckingResult *result in matches) {
+						if ([line isLocalizedString]) {
+							[relevantStrings addObjectsFromArray:[line localizedStringsArray]];
+						}
+						else {
 							
-							NSString *string = [line substringWithRange:result.range];
-							
-							if (![self shouldIgnoreString:string]) {
+							for (NSString *string in [line objectiveCStringsArray]) {
 								
-								[relevantStrings addObject:string];
-								NSLog(@"Added \"%@\"", line);
+								if (![self shouldIgnoreString:string]) [relevantStrings addObject:string];
 							}
 						}
+						
 					}
 				}
 				[_results setValue:relevantStrings forKey:path];
 			}
 		});
-		
 	}];
+	
+	
 	dispatch_group_notify(group, queue, ^{
 		dispatch_async(dispatch_get_main_queue(), ^{
 			
@@ -156,6 +155,8 @@
 	
 	return strings;
 }
+
+#pragma mark - Utlity
 
 - (BOOL)shouldIgnoreLine:(NSString *)line {
 	

@@ -1,3 +1,4 @@
+
 //
 //  BrowseViewController.m
 //  Localizer
@@ -10,12 +11,12 @@
 #import "ProjectScanner.h"
 #import "ProjectPatcher.h"
 #import "FilterViewController.h"
+#import "NSString+Utility.h"
 
 @interface BrowseViewController () <ProjectScannerDelegate, ProjectPatcherDelegate, FilterViewControllerDelegate>
 
 @property (nonatomic, strong) ProjectScanner      *scanner;
 @property (nonatomic, strong) ProjectPatcher      *patcher;
-@property (nonatomic, strong) NSDictionary        *fileIndex;
 @property (nonatomic, strong) NSDictionary        *stringsIndex;
 @property (nonatomic, strong) NSMutableDictionary *keysDictionary;
 
@@ -155,7 +156,6 @@ static NSString *const kTableColumnKey         = @"Key";
 
 - (void)scanner:(ProjectScanner *)scanner didFinishScanning:(NSDictionary *)results {
 	
-	self.fileIndex = results;
 	self.stringsIndex = [self stringsIndexFromFileIndex:results];
 	
 	[self performSegueWithIdentifier:kFilterSegueIndentifier sender:self];
@@ -261,9 +261,20 @@ static NSString *const kTableColumnKey         = @"Key";
 - (void)updateKeyDictionary {
 	
 	for (NSString *string in self.stringsIndex.allKeys) {
-		
-		if (![self.keysDictionary.allKeys containsObject:string]) {
-			[self.keysDictionary setObject:@"" forKey:string];
+
+		if ([string isLocalizedString]) {
+
+			NSString *localizedKey = [string localizedKey];
+			NSString *defaultValue = [string localizedValue];
+			
+			[self.keysDictionary setObject:[localizedKey unwrappedContent] forKey:defaultValue];
+		}
+		else {
+			
+			if (![self.keysDictionary.allKeys containsObject:string]) {
+				[self.keysDictionary setObject:@"" forKey:string];
+			}
+			
 		}
 	}
 	
@@ -273,7 +284,6 @@ static NSString *const kTableColumnKey         = @"Key";
 - (void)reset {
 	
 	[self.keysDictionary removeAllObjects];
-	self.fileIndex = nil;
 	self.stringsIndex = nil;
 }
 
