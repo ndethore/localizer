@@ -32,7 +32,8 @@
 			if (key.length == 0) key = string;
 			else key = [key wrappedContent];
 			
-			NSString *localizedString = [self generateLocalizedStringWithKey:key andDefaultValue:string];
+//			NSString *localizedString = [self generateLocalizedStringWithKey:key andDefaultValue:string];
+			NSString *localizedString = [self generateLocalizedStringWithKey:key];
 			
 			if ([string isLocalizedString]) {
 				key = [[keysDictionary objectForKey:[string localizedValue]] wrappedContent];
@@ -90,6 +91,11 @@
 - (NSString *)generateLocalizedStringWithKey:(NSString *)key andDefaultValue:(NSString *)value {
 	
 	return [NSString stringWithFormat:@"NSLocalizedStringWithDefaultValue(%@, nil, [NSBundle mainBundle], %@, nil)", key, value];
+}
+
+- (NSString *)generateLocalizedStringWithKey:(NSString *)key {
+
+	return [NSString stringWithFormat:@"NSLocalizedString(%@, nil)", key];
 }
 
 
