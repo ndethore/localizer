@@ -79,20 +79,13 @@
 					
 					if (line && ![self shouldIgnoreLine:line]) {
 						
-						if ([line isLocalizedString]) {
-							[relevantStrings addObjectsFromArray:[line localizedStringsArray]];
-						}
-						else {
+						for (NSString *string in [line objectiveCStringsArray]) {
+							NSCharacterSet *charset = [NSCharacterSet characterSetWithCharactersInString:@"	"];
 							
-							for (NSString *string in [line objectiveCStringsArray]) {
-								NSCharacterSet *charset = [NSCharacterSet characterSetWithCharactersInString:@"	"];
-
-								if (![self shouldIgnoreString:string]) {
-									[relevantStrings addObject:[string stringByTrimmingCharactersInSet:charset]];
-								}
+							if (![self shouldIgnoreString:string]) {
+								[relevantStrings addObject:[string stringByTrimmingCharactersInSet:charset]];
 							}
 						}
-						
 					}
 				}
 				[_results setValue:relevantStrings forKey:path];

@@ -250,19 +250,8 @@ static NSString *const kTableColumnKey         = @"Key";
 	
 	for (NSString *string in self.stringsIndex.allKeys) {
 
-		if ([string isLocalizedString]) {
-
-			NSString *localizedKey = [string localizedKey];
-			NSString *defaultValue = [string localizedValue];
-			
-			[self.keysDictionary setObject:[localizedKey unwrappedContent] forKey:defaultValue];
-		}
-		else {
-			
-			if (![self.keysDictionary.allKeys containsObject:string]) {
-				[self.keysDictionary setObject:@"" forKey:string];
-			}
-			
+		if (![self.keysDictionary.allKeys containsObject:string]) {
+			[self.keysDictionary setObject:@"" forKey:string];
 		}
 	}
 	

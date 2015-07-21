@@ -32,14 +32,7 @@
 			if (key.length == 0) key = string;
 			else key = [key wrappedContent];
 			
-//			NSString *localizedString = [self generateLocalizedStringWithKey:key andDefaultValue:string];
 			NSString *localizedString = [self generateLocalizedStringWithKey:key];
-			
-			if ([string isLocalizedString]) {
-				key = [[keysDictionary objectForKey:[string localizedValue]] wrappedContent];
-				localizedString = [self generateLocalizedStringWithKey:key andDefaultValue:[string localizedValue]];
-			}
-
 			
 			NSArray *paths = [stringIndex objectForKey:string];
 			for (NSString *path in paths) {
