@@ -186,6 +186,7 @@ static NSString *const kTableColumnKey         = @"Key";
 
 - (void)patcherDidFinishPatching:(ProjectPatcher *)patcher {
 	NSLog(@"Patching completed.");
+	[self createStringsFile];
 }
 
 #pragma mark - <NSTableViewDelegate>
@@ -301,5 +302,28 @@ static NSString *const kTableColumnKey         = @"Key";
 	return index;
 }
 
+// To move to a separate object
+
+- (BOOL)createStringsFile {
+	
+	NSString *stringsFilePath = [NSString stringWithFormat:@"%@/Localizable.strings", [self.pathTextField stringValue]];
+	NSFileHandle *handle = [NSFileHandle fileHandleForWritingAtPath:stringsFilePath];
+	if (!handle) {
+		[[NSFileManager defaultManager] createFileAtPath:stringsFilePath contents:nil attributes:nil];
+		handle = [NSFileHandle fileHandleForWritingAtPath:stringsFilePath];
+	}
+	if (!handle) return NO;
+	
+	NSMutableString *content = [[NSMutableString alloc] init];
+	for (NSString *key in self.keysDictionary.allKeys) {
+		
+		[content appendFormat:@"\"%@\" = \"%@\";\n", [self.keysDictionary objectForKey:key], [key unwrappedContent]];
+	}
+	[handle seekToEndOfFile];
+	[handle writeData:[content dataUsingEncoding:NSUTF8StringEncoding]];
+	[handle closeFile];
+	
+	return YES;
+}
 
 @end
