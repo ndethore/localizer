@@ -179,7 +179,8 @@
 		 ![line containsString:@"\":@\""] &&
 		 ![line containsString:@"path"] &&
 		 ![line containsString:@"Log"] &&
-		 ![line containsString:@"log"]) {
+		 ![line containsString:@"log"] &&
+		 ![line containsString:@"NSLocalized"]){
 		
 		shouldIgnore = NO;
 	}
