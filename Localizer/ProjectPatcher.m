@@ -55,7 +55,7 @@
 			}
 		});
 	});
-
+ 
 }
 
 - (BOOL)replaceString:(NSString *)oldString withString:(NSString *)newString inFileAtPath:(NSString *)path {
@@ -64,7 +64,7 @@
 	NSTask *task = [[NSTask alloc] init];
 	[task setLaunchPath: @"/usr/bin/sed"];
 	
-	NSArray *argvals = [NSArray arrayWithObjects:@"-i.back", [NSString stringWithFormat:@"s/%@/%@/", [oldString escapedString], [newString escapedString]], path, nil];
+	NSArray *argvals = [NSArray arrayWithObjects:@"-i", @"", [NSString stringWithFormat:@"s/%@/%@/", [oldString escapedString], [newString escapedString]], path, nil];
 	[task setArguments: argvals];
 	
 	NSPipe *pipe = [NSPipe pipe];

@@ -114,6 +114,7 @@ static NSString *const kLocalizedStringValue = @"value";
 	
 //	[escapedString replaceOccurrencesOfString:@" " withString:@"\\ " options:0 range:NSMakeRange(0, escapedString.length)];
 //	[escapedString replaceOccurrencesOfString:@"\"" withString:@"\\\"" options:0 range:NSMakeRange(0, escapedString.length)];
+	[escapedString replaceOccurrencesOfString:@"/" withString:@"\\/" options:0 range:NSMakeRange(0, escapedString.length)];
 	[escapedString replaceOccurrencesOfString:@"[" withString:@"\\[" options:0 range:NSMakeRange(0, escapedString.length)];
 	[escapedString replaceOccurrencesOfString:@"]" withString:@"\\]" options:0 range:NSMakeRange(0, escapedString.length)];
 
