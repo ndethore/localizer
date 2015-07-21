@@ -10,14 +10,13 @@
 #import "BrowseViewController.h"
 #import "ProjectScanner.h"
 #import "ProjectPatcher.h"
-#import "FilterViewController.h"
 #import "NSString+Utility.h"
 
-@interface BrowseViewController () <ProjectScannerDelegate, ProjectPatcherDelegate, FilterViewControllerDelegate>
+@interface BrowseViewController () <ProjectScannerDelegate, ProjectPatcherDelegate>
 
 @property (nonatomic, strong) ProjectScanner      *scanner;
 @property (nonatomic, strong) ProjectPatcher      *patcher;
-@property (nonatomic, strong) NSDictionary        *stringsIndex;
+@property (nonatomic, strong) NSMutableDictionary *stringsIndex;
 @property (nonatomic, strong) NSMutableDictionary *keysDictionary;
 
 @property (assign) IBOutlet NSTextField         *pathTextField;
@@ -100,6 +99,18 @@ static NSString *const kTableColumnKey         = @"Key";
 	[self scanPath];
 }
 
+- (IBAction)removeButtonSelected:(id)sender {
+	
+	NSIndexSet *selectedRows = [self.tableView selectedRowIndexes];
+	
+	NSArray *keys = [self.keysDictionary.allKeys objectsAtIndexes:selectedRows];
+	[self.keysDictionary removeObjectsForKeys:keys];
+	[self.stringsIndex removeObjectsForKeys:keys];
+	
+	[self.tableView deselectAll:self];
+	[self.tableView reloadData];
+}
+
 - (IBAction)replaceButtonSelected:(id)sender {
 	
 	[self.patcher patchStrings:self.stringsIndex withKeys:self.keysDictionary];
@@ -158,7 +169,9 @@ static NSString *const kTableColumnKey         = @"Key";
 	
 	self.stringsIndex = [self stringsIndexFromFileIndex:results];
 	
-	[self performSegueWithIdentifier:kFilterSegueIndentifier sender:self];
+//	[self performSegueWithIdentifier:kFilterSegueIndentifier sender:self];
+	[self updateUI];
+	[self setUIEnabled:YES];
 }
 
 #pragma mark - ProjectScannerDelegate
@@ -173,23 +186,6 @@ static NSString *const kTableColumnKey         = @"Key";
 
 - (void)patcherDidFinishPatching:(ProjectPatcher *)patcher {
 	NSLog(@"Patching completed.");
-}
-
-#pragma mark - FilterViewControllerDelegate
-
-- (void)didCancelFiltering {
-	
-
-	[self updateUI];
-	[self setUIEnabled:YES];
-}
-
-- (void)didFinishFiltering:(NSDictionary *)results {
-	
-	self.stringsIndex = results;
-
-	[self updateUI];
-	[self setUIEnabled:YES];
 }
 
 #pragma mark - <NSTableViewDelegate>
@@ -237,18 +233,6 @@ static NSString *const kTableColumnKey         = @"Key";
 	}
 }
 
-#pragma mark - Navigation
-
-- (void)prepareForSegue:(nonnull NSStoryboardSegue *)segue sender:(nullable id)sender {
-	
-	if ([segue.identifier isEqualToString:kFilterSegueIndentifier]) {
-		
-		FilterViewController *filterVC = [segue destinationController];
-		[filterVC setDelegate:self];
-		[filterVC setDataSource:[self.stringsIndex mutableCopy]];
-	}
-}
-
 #pragma mark - Private
 
 - (void)updateUI {
@@ -287,7 +271,7 @@ static NSString *const kTableColumnKey         = @"Key";
 	self.stringsIndex = nil;
 }
 
-- (NSDictionary *)stringsIndexFromFileIndex:(NSDictionary *)fileIndex {
+- (NSMutableDictionary *)stringsIndexFromFileIndex:(NSDictionary *)fileIndex {
 	
 	NSMutableDictionary *index = [[NSMutableDictionary alloc] init];
 	
@@ -298,6 +282,8 @@ static NSString *const kTableColumnKey         = @"Key";
 			if (![index.allKeys containsObject:string]) {
 				// "New" string, let's add it to the clean index along with file it belongs to.
 				NSMutableArray *referenceFilePaths = [NSMutableArray arrayWithObject:filePath];
+//				NSLog(@"Handling \"%@\"...", string);
+//				NSLog(@"Setting up reference files array with path : %@", referenceFilePaths);
 				[index setObject:referenceFilePaths forKey:string];
 				
 			}
@@ -305,6 +291,7 @@ static NSString *const kTableColumnKey         = @"Key";
 				// Existing string, let's only add the file to which it belongs to.
 				NSMutableArray *referenceFilePaths = [index objectForKey:string];
 				if (![referenceFilePaths containsObject:filePath]) {
+//					NSLog(@"Adding %@ to reference files array for key \"%@\"", referenceFilePaths, string);
 					[referenceFilePaths addObject:filePath];
 				}
 				[index setObject:referenceFilePaths forKey:string];
