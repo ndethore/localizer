@@ -85,8 +85,11 @@
 						else {
 							
 							for (NSString *string in [line objectiveCStringsArray]) {
-								
-								if (![self shouldIgnoreString:string]) [relevantStrings addObject:string];
+								NSCharacterSet *charset = [NSCharacterSet characterSetWithCharactersInString:@"	"];
+
+								if (![self shouldIgnoreString:string]) {
+									[relevantStrings addObject:[string stringByTrimmingCharactersInSet:charset]];
+								}
 							}
 						}
 						
