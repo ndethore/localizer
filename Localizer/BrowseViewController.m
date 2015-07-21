@@ -210,8 +210,8 @@ static NSString *const kTableColumnKey         = @"Key";
 		else if ([columnIndentifier isEqualToString:kTableColumnKey]) text = [self.keysDictionary.allValues objectAtIndex:rowIndex];
 		else if ([columnIndentifier isEqualToString:kTableColumnFile]) {
 			
-			
-			NSArray *paths = [self.stringsIndex.allValues objectAtIndex:rowIndex];
+			NSString *key = [self.keysDictionary.allKeys objectAtIndex:rowIndex];
+			NSArray *paths = [self.stringsIndex objectForKey:key];
 			NSMutableString *pathsList = [[NSMutableString alloc] init];
 			
 			for (NSString *path in paths) {
