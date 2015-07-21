@@ -28,6 +28,8 @@
 			
 			NSString *string = (NSString *)obj;
 			NSString *key = [keysDictionary objectForKey:string];;
+			NSString *key = [keysDictionary objectForKey:string];
+			if (key.length == 0) key = string;
 			NSString *localizedString = [self generateLocalizedStringWithKey:key andDefaultValue:string];
 			
 			if ([string isLocalizedString]) {
