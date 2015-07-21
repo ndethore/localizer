@@ -37,7 +37,7 @@
 			NSArray *paths = [stringIndex objectForKey:string];
 			for (NSString *path in paths) {
 				if ([weakSelf replaceString:string withString:localizedString inFileAtPath:path]) {
-					NSLog(@"\"%@\"->\"%@\"",	string, localizedString);
+//					NSLog(@"\"%@\"->\"%@\"",	string, localizedString);
 				}
 			}
 			
@@ -77,7 +77,6 @@
 	// Read the response
 	NSData *data = [file readDataToEndOfFile];
 	NSString *string = [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
-	NSLog(@"RESPONSE:%@", string);
 	return !(string.length > 0);
 }
 

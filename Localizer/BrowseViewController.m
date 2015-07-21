@@ -274,9 +274,8 @@ static NSString *const kTableColumnKey         = @"Key";
 			
 			if (![index.allKeys containsObject:string]) {
 				// "New" string, let's add it to the clean index along with file it belongs to.
+				
 				NSMutableArray *referenceFilePaths = [NSMutableArray arrayWithObject:filePath];
-//				NSLog(@"Handling \"%@\"...", string);
-//				NSLog(@"Setting up reference files array with path : %@", referenceFilePaths);
 				[index setObject:referenceFilePaths forKey:string];
 				
 			}
@@ -284,7 +283,6 @@ static NSString *const kTableColumnKey         = @"Key";
 				// Existing string, let's only add the file to which it belongs to.
 				NSMutableArray *referenceFilePaths = [index objectForKey:string];
 				if (![referenceFilePaths containsObject:filePath]) {
-//					NSLog(@"Adding %@ to reference files array for key \"%@\"", referenceFilePaths, string);
 					[referenceFilePaths addObject:filePath];
 				}
 				[index setObject:referenceFilePaths forKey:string];
