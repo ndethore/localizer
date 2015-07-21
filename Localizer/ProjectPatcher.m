@@ -35,7 +35,7 @@
 			NSString *localizedString = [self generateLocalizedStringWithKey:key andDefaultValue:string];
 			
 			if ([string isLocalizedString]) {
-				key = [keysDictionary objectForKey:[string localizedValue]];
+				key = [[keysDictionary objectForKey:[string localizedValue]] wrappedContent];
 				localizedString = [self generateLocalizedStringWithKey:key andDefaultValue:[string localizedValue]];
 			}
 
