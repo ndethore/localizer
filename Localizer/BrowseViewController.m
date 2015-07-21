@@ -117,6 +117,10 @@ static NSString *const kTableColumnKey         = @"Key";
 	
 }
 
+- (IBAction)generateStringsButtonSelected:(id)sender {
+	[self createStringsFile];
+}
+
 #pragma mark - Helpers
 
 - (void)showAlertWithStyle:(NSAlertStyle)style title:(NSString *)title subtitle:(NSString *)subtitle {
@@ -186,7 +190,6 @@ static NSString *const kTableColumnKey         = @"Key";
 
 - (void)patcherDidFinishPatching:(ProjectPatcher *)patcher {
 	NSLog(@"Patching completed.");
-	[self createStringsFile];
 }
 
 #pragma mark - <NSTableViewDelegate>
