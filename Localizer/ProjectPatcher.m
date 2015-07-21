@@ -27,9 +27,11 @@
 		dispatch_group_async(group, queue, ^{
 			
 			NSString *string = (NSString *)obj;
-			NSString *key = [keysDictionary objectForKey:string];;
+			
 			NSString *key = [keysDictionary objectForKey:string];
 			if (key.length == 0) key = string;
+			else key = [key wrappedContent];
+			
 			NSString *localizedString = [self generateLocalizedStringWithKey:key andDefaultValue:string];
 			
 			if ([string isLocalizedString]) {
