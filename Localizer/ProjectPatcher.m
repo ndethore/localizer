@@ -28,7 +28,7 @@
 			
 			NSString *string = (NSString *)obj;
 			NSString *key = [keysDictionary objectForKey:string];;
-			NSString *localizedString = [self generateLocalizedStringWithKey:key andDefaultValue:[string localizedValue]];
+			NSString *localizedString = [self generateLocalizedStringWithKey:key andDefaultValue:string];
 			
 			if ([string isLocalizedString]) {
 				key = [keysDictionary objectForKey:[string localizedValue]];
