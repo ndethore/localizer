@@ -9,6 +9,9 @@
 #import "ProjectScanner.h"
 #import "NSString+Utility.h"
 
+NSString *kStringValue = @"value";
+NSString *kStringRange = @"range";
+
 @interface ProjectScanner() {
 	
 	NSMutableDictionary	*_results;
@@ -147,6 +150,29 @@
 			trimmedLine = [[line mutableCopy] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 			[strings addObject:trimmedLine];
 		}
+	}
+	
+	return strings;
+}
+
+-(NSArray *)stringsInFileAtPath:(NSString *)path {
+	
+	NSMutableArray *strings = [[NSMutableArray alloc] init];
+	
+	NSString *fileContents = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
+	NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"@\\\".*\\\"" options:0 error:nil];
+	NSArray *matches = [regex matchesInString:fileContents options:0 range:NSMakeRange(0, fileContents.length)];
+	
+	for (NSTextCheckingResult *result in matches) {
+		
+		NSRange range = result.range;
+		NSString *value = [fileContents substringWithRange:range];
+		NSDictionary *entry = @{kStringValue:value,
+										kStringRange:[NSValue valueWithRange:range]};
+		
+		
+		[strings addObject:entry];
+		
 	}
 	
 	return strings;

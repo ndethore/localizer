@@ -8,6 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
+extern NSString *kStringValue;
+extern NSString *kStringRange;
+
+
 @class ProjectScanner;
 
 @protocol ProjectScannerDelegate <NSObject>
