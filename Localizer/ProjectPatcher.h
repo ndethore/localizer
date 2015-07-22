@@ -24,6 +24,6 @@
 
 @property (assign) id <ProjectPatcherDelegate> delegate;
 
-- (void)patchStrings:(NSDictionary *)stringIndex withKeys:(NSDictionary *)keysDictionary;
+- (void)patchFiles:(NSDictionary *)fileIndex withKeys:(NSDictionary *)keysDictionary;
 
 @end

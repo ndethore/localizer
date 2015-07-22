@@ -18,6 +18,7 @@
 @property (nonatomic, strong) ProjectPatcher      *patcher;
 
 @property (nonatomic, strong) NSMutableArray			*dataSource;
+@property (nonatomic, strong) NSDictionary			*fileIndex;
 @property (nonatomic, strong) NSMutableDictionary	*stringsIndex;
 
 @property (assign) IBOutlet NSTextField         *pathTextField;
@@ -139,7 +140,7 @@ static NSString *const kTableColumnKey         = @"Key";
 		[keyDictionary setValue:key forKey:string];
 	}
 	
-	[self.patcher patchStrings:self.stringsIndex withKeys:keyDictionary];
+	[self.patcher patchFiles:self.fileIndex withKeys:keyDictionary];
 	
 }
 
@@ -197,6 +198,7 @@ static NSString *const kTableColumnKey         = @"Key";
 
 - (void)scanner:(ProjectScanner *)scanner didFinishScanning:(NSDictionary *)results {
 	
+	self.fileIndex = results;
 	self.stringsIndex = [self stringsIndexFromFileIndex:results];
 	[self setupDataSourceWithFileIndex:results];
 	

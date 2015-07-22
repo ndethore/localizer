@@ -11,7 +11,7 @@
 
 @implementation ProjectPatcher
 
-- (void)patchStrings:(NSDictionary *)stringIndex withKeys:(NSDictionary *)keysDictionary {
+- (void)patchFiles:(NSDictionary *)fileIndex withKeys:(NSDictionary *)keysDictionary {
 	
 	__weak typeof(self) weakSelf = self;
 	
@@ -22,27 +22,25 @@
 		[self.delegate patcherDidStartPatching:self];
 	}
 	
-	[stringIndex.allKeys enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+	[fileIndex.allKeys enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
 		
 		dispatch_group_async(group, queue, ^{
 			
-			NSString *string = (NSString *)obj;
+			NSString *path = (NSString *)obj;
 			
-			NSString *key = [keysDictionary objectForKey:string];
-			if (key.length == 0) key = string;
-			else key = [key wrappedContent];
-			
-			NSString *localizedString = [self generateLocalizedStringWithKey:key];
-			
-			NSArray *paths = [stringIndex objectForKey:string];
-			for (NSString *path in paths) {
-				if ([weakSelf replaceString:string withString:localizedString inFileAtPath:path]) {
-//					NSLog(@"\"%@\"->\"%@\"",	string, localizedString);
+			for (NSString *string in [fileIndex objectForKey:path]) {
+				
+				NSString *key = [keysDictionary objectForKey:string];
+				if (key.length == 0) key = string;
+				else key = [key wrappedContent];
+				
+				NSString *localizedString = [self generateLocalizedStringWithKey:key];
+				
+				[weakSelf replaceString:string withString:localizedString inFileAtPath:path];
+				
+				if (self.delegate && [self.delegate respondsToSelector:@selector(patcher:didPatchString:)]) {
+					[self.delegate patcher:self didPatchString:string];
 				}
-			}
-			
-			if (self.delegate && [self.delegate respondsToSelector:@selector(patcher:didPatchString:)]) {
-				[self.delegate patcher:self didPatchString:string];
 			}
 		});
 	}];
@@ -57,6 +55,7 @@
 	});
  
 }
+
 
 - (BOOL)replaceString:(NSString *)oldString withString:(NSString *)newString inFileAtPath:(NSString *)path {
 	
