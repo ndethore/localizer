@@ -94,10 +94,10 @@ static NSString *const kLocalizedStringValue = @"value";
 	
 	NSString *content;
 	
-	NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"[^\"@]*[^\"@]" options:0 error:nil];
+	NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@".*\\\"(.*)\\\".*" options:0 error:nil];
 	NSTextCheckingResult *result = [regex firstMatchInString:self options:0 range:NSMakeRange(0, self.length)];
 	
-	content = [self substringWithRange:result.range];
+	content = [self substringWithRange:[result rangeAtIndex:1]];
 	
 	return content;
 }
