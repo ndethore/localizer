@@ -18,7 +18,7 @@
 @property (nonatomic, strong) ProjectPatcher      *patcher;
 
 @property (nonatomic, strong) NSMutableArray			*dataSource;
-@property (nonatomic, strong) NSDictionary			*fileIndex;
+@property (nonatomic, strong) NSMutableDictionary	*fileIndex;
 @property (nonatomic, strong) NSMutableDictionary	*stringsIndex;
 
 @property (assign) IBOutlet NSTextField         *pathTextField;
@@ -109,12 +109,19 @@ static NSString *const kTableColumnKey         = @"Key";
 	
 	NSIndexSet *selectedRows = [self.tableView selectedRowIndexes];
 	
-	// Remove the selected items from the strings index
+	// Remove the selected items from the file index
 	NSArray *selectedEntries = [self.dataSource objectsAtIndexes:selectedRows];
 	for (NSDictionary *entry in selectedEntries) {
 		
+		NSString *path = [entry objectForKey:kTableColumnFile];
 		NSString *string = [entry objectForKey:kTableColumnString];
-		[self.stringsIndex removeObjectForKey:string];
+		
+		NSMutableArray *strings = [self.fileIndex objectForKey:path];
+		NSInteger index = [strings indexOfObjectIdenticalTo:string];
+		[strings removeObjectAtIndex:index];
+		NSLog(@"Removed \"%@\" from strings list for file: %@", string, path);
+		
+//		[self.stringsIndex removeObjectForKey:string];
 	}
 	
 	// Remove the entries from the datasource
@@ -140,6 +147,7 @@ static NSString *const kTableColumnKey         = @"Key";
 		[keyDictionary setValue:key forKey:string];
 	}
 	
+	NSLog(@"Replacing with file index:%@", self.fileIndex);
 	[self.patcher patchFiles:self.fileIndex withKeys:keyDictionary];
 	
 }
@@ -199,6 +207,8 @@ static NSString *const kTableColumnKey         = @"Key";
 - (void)scanner:(ProjectScanner *)scanner didFinishScanning:(NSDictionary *)results {
 	
 	self.fileIndex = results;
+	NSLog(@"File index:%@", self.fileIndex);
+	
 	self.stringsIndex = [self stringsIndexFromFileIndex:results];
 	[self setupDataSourceWithFileIndex:results];
 	
