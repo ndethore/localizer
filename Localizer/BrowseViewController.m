@@ -198,7 +198,7 @@ static NSString *const kTableColumnKey         = @"Key";
 - (void)scanner:(ProjectScanner *)scanner didFinishScanning:(NSDictionary *)results {
 	
 	self.stringsIndex = [self stringsIndexFromFileIndex:results];
-	[self setupDataSource];
+	[self setupDataSourceWithFileIndex:results];
 	
 	[self updateUI];
 	[self setUIEnabled:YES];
@@ -232,7 +232,11 @@ static NSString *const kTableColumnKey         = @"Key";
 	NSString *columnIndentifier = [tableColumn identifier];
 	
 	if ([columnIndentifier isEqualToString:kTableColumnString]) text = [entry objectForKey:kTableColumnString];
-	else if ([columnIndentifier isEqualToString:kTableColumnFile]) text = [entry objectForKey:kTableColumnFile];
+	else if ([columnIndentifier isEqualToString:kTableColumnFile]) {
+		
+		NSURL *url = [NSURL URLWithString:[entry objectForKey:kTableColumnFile]];
+		text = [url lastPathComponent];
+	}
 	else if ([columnIndentifier isEqualToString:kTableColumnKey]) text = [entry objectForKey:kTableColumnKey];
 	
 	return text;
@@ -261,26 +265,6 @@ static NSString *const kTableColumnKey         = @"Key";
 	[self.tableView reloadData];
 }
 
-- (void)setupDataSource {
-
-	for (NSString *string in self.stringsIndex) {
-		
-		NSArray *pathList = [self.stringsIndex objectForKey:string];
-		NSMutableString *pathString = [[NSMutableString alloc] init];
-		
-		for (NSString *path in pathList) {
-			NSURL *url = [NSURL URLWithString:path];
-			[pathString appendFormat:@"%@;", [url lastPathComponent]];
-		}
-		
-		NSMutableDictionary *entry = [@{kTableColumnString:string,
-												 kTableColumnFile:pathString,
-												 kTableColumnKey:@""} mutableCopy];
-	
-		[self.dataSource addObject:entry];
-	}
-}
-
 - (void)reset {
 	
 	self.stringsIndex = nil;
@@ -288,35 +272,34 @@ static NSString *const kTableColumnKey         = @"Key";
 	
 }
 
+- (void)setupDataSourceWithFileIndex:(NSDictionary *)fileIndex {
+	
+	for (NSString *filePath in fileIndex.allKeys) {
+		
+		for (NSString *string in [fileIndex objectForKey:filePath]) {
+
+			NSMutableDictionary *entry = [@{kTableColumnString:string,
+													  kTableColumnFile:filePath,
+													  kTableColumnKey:@""} mutableCopy];
+			
+			[self.dataSource addObject:entry];
+
+			
+		}
+	}
+	
+}
+
 - (NSMutableDictionary *)stringsIndexFromFileIndex:(NSDictionary *)fileIndex {
 	
 	NSMutableDictionary *index = [[NSMutableDictionary alloc] init];
-	if (!fileIndex) NSLog(@"ERROR : FILE INDEX IS NIL ! OMAGAAAAD !");
+	
 	for (NSString *filePath in fileIndex.allKeys) {
 		
 		for (NSString *string in [fileIndex objectForKey:filePath]) {
 			
-			if (![index.allKeys containsObject:string]) {
-				// "New" string, let's add it to the clean index along with file it belongs to.
-				
-				NSMutableArray *referenceFilePaths = [NSMutableArray arrayWithObject:filePath];
-				[index setObject:referenceFilePaths forKey:string];
-				
-			}
-			else {
-				// Existing string, let's only add the file to which it belongs to.
-				NSMutableArray *referenceFilePaths = [index objectForKey:string];
-				if (!referenceFilePaths) NSLog(@"ERROR: INDEX CONTAINS KEY:%@ BUT HAS NOT REFERENCE FILE PATHS ARRAY", string);
-				if (![referenceFilePaths containsObject:filePath]) {
-					[referenceFilePaths addObject:filePath];
-				}
-				if (referenceFilePaths) {
-					[index setObject:referenceFilePaths forKey:string];
-				}
-				else {
-					NSLog(@"EROR : NO REFERENCE FILE PATHS FOUND FOR %@", string);
-				}
-			}
+			NSMutableArray *referenceFilePaths = [NSMutableArray arrayWithObject:filePath];
+			[index setObject:referenceFilePaths forKey:string];
 		}
 	}
 	return index;
