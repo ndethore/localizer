@@ -16,8 +16,9 @@
 
 @property (nonatomic, strong) ProjectScanner      *scanner;
 @property (nonatomic, strong) ProjectPatcher      *patcher;
-@property (nonatomic, strong) NSMutableDictionary *stringsIndex;
-@property (nonatomic, strong) NSMutableDictionary *keysDictionary;
+
+@property (nonatomic, strong) NSMutableArray			*dataSource;
+@property (nonatomic, strong) NSMutableDictionary	*stringsIndex;
 
 @property (assign) IBOutlet NSTextField         *pathTextField;
 @property (assign) IBOutlet NSButton            *browseButton;
@@ -47,7 +48,7 @@ static NSString *const kTableColumnKey         = @"Key";
 
 - (void)initialize {
 	
-	_keysDictionary = [[NSMutableDictionary alloc] init];
+	_dataSource = [[NSMutableArray alloc] init];
 	self.scanner = [[ProjectScanner alloc] init];
 	self.patcher = [[ProjectPatcher alloc] init];
 	
@@ -71,6 +72,8 @@ static NSString *const kTableColumnKey         = @"Key";
 	}
 	
 }
+
+#pragma mark Search
 
 - (IBAction)searchButtonSelected:(NSButton *)sender {
 
@@ -99,21 +102,44 @@ static NSString *const kTableColumnKey         = @"Key";
 	[self scanPath];
 }
 
+#pragma mark Remove
+
 - (IBAction)removeButtonSelected:(id)sender {
 	
 	NSIndexSet *selectedRows = [self.tableView selectedRowIndexes];
 	
-	NSArray *keys = [self.keysDictionary.allKeys objectsAtIndexes:selectedRows];
-	[self.keysDictionary removeObjectsForKeys:keys];
-	[self.stringsIndex removeObjectsForKeys:keys];
+	// Remove the selected items from the strings index
+	NSArray *selectedEntries = [self.dataSource objectsAtIndexes:selectedRows];
+	for (NSDictionary *entry in selectedEntries) {
+		
+		NSString *string = [entry objectForKey:kTableColumnString];
+		[self.stringsIndex removeObjectForKey:string];
+	}
+	
+	// Remove the entries from the datasource
+	[self.dataSource removeObjectsAtIndexes:selectedRows];
 	
 	[self.tableView deselectAll:self];
 	[self.tableView reloadData];
 }
 
+#pragma mark Replace
+
 - (IBAction)replaceButtonSelected:(id)sender {
 	
-	[self.patcher patchStrings:self.stringsIndex withKeys:self.keysDictionary];
+	// Generate the key dictionary
+	
+	NSMutableDictionary *keyDictionary = [[NSMutableDictionary alloc] init];
+	
+	for (NSDictionary *entry in self.dataSource) {
+		
+		NSString *string = [entry objectForKey:kTableColumnString];
+		NSString *key = [entry objectForKey:kTableColumnKey];
+		
+		[keyDictionary setValue:key forKey:string];
+	}
+	
+	[self.patcher patchStrings:self.stringsIndex withKeys:keyDictionary];
 	
 }
 
@@ -172,8 +198,8 @@ static NSString *const kTableColumnKey         = @"Key";
 - (void)scanner:(ProjectScanner *)scanner didFinishScanning:(NSDictionary *)results {
 	
 	self.stringsIndex = [self stringsIndexFromFileIndex:results];
+	[self setupDataSource];
 	
-//	[self performSegueWithIdentifier:kFilterSegueIndentifier sender:self];
 	[self updateUI];
 	[self setUIEnabled:YES];
 }
@@ -195,33 +221,19 @@ static NSString *const kTableColumnKey         = @"Key";
 #pragma mark - <NSTableViewDelegate>
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView {
-	return [self.keysDictionary.allKeys count];
+	return [self.dataSource count];
 }
 
 - (id)tableView:(NSTableView *)aTableView objectValueForTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)rowIndex {
 	
 	NSString *text;
 	
-	if (self.stringsIndex.count > 0
-		 && self.keysDictionary.count > 0) {
-
-		NSString *columnIndentifier = [tableColumn identifier];
-		if ([columnIndentifier isEqualToString:kTableColumnString]) text = [self.keysDictionary.allKeys objectAtIndex:rowIndex];
-		else if ([columnIndentifier isEqualToString:kTableColumnKey]) text = [self.keysDictionary.allValues objectAtIndex:rowIndex];
-		else if ([columnIndentifier isEqualToString:kTableColumnFile]) {
-			
-			NSString *key = [self.keysDictionary.allKeys objectAtIndex:rowIndex];
-			NSArray *paths = [self.stringsIndex objectForKey:key];
-			NSMutableString *pathsList = [[NSMutableString alloc] init];
-			
-			for (NSString *path in paths) {
-				NSURL *url = [NSURL URLWithString:path];
-				[pathsList appendFormat:@"%@;", [url lastPathComponent]];
-			}
-			
-			text = pathsList;
-		}
-	}
+	NSDictionary *entry = self.dataSource[rowIndex];
+	NSString *columnIndentifier = [tableColumn identifier];
+	
+	if ([columnIndentifier isEqualToString:kTableColumnString]) text = [entry objectForKey:kTableColumnString];
+	else if ([columnIndentifier isEqualToString:kTableColumnFile]) text = [entry objectForKey:kTableColumnFile];
+	else if ([columnIndentifier isEqualToString:kTableColumnKey]) text = [entry objectForKey:kTableColumnKey];
 	
 	return text;
 }
@@ -232,42 +244,54 @@ static NSString *const kTableColumnKey         = @"Key";
 	NSString *columnIndentifier = [aTableColumn identifier];
 	
 	if ([columnIndentifier isEqualToString:kTableColumnKey]) {
-		NSString *string = [self.keysDictionary.allKeys objectAtIndex:rowIndex];
-		[self.keysDictionary setObject:anObject forKey:string];
+		
+		NSMutableDictionary *entry = self.dataSource[rowIndex];
+		[entry setObject:anObject forKey:kTableColumnKey];
+		
 	}
 }
 
 #pragma mark - Private
 
 - (void)updateUI {
-
-	[self updateKeyDictionary];
+	
 	[self.statusLabel setHidden:NO];
-	[self.statusLabel setStringValue:[NSString stringWithFormat:@"%ld strings found.", self.stringsIndex.count]];
+	[self.statusLabel setStringValue:[NSString stringWithFormat:@"%ld strings found.", self.dataSource.count]];
+
+	[self.tableView reloadData];
 }
 
-- (void)updateKeyDictionary {
-	
-	for (NSString *string in self.stringsIndex.allKeys) {
+- (void)setupDataSource {
 
-		if (![self.keysDictionary.allKeys containsObject:string]) {
-			[self.keysDictionary setObject:@"" forKey:string];
+	for (NSString *string in self.stringsIndex) {
+		
+		NSArray *pathList = [self.stringsIndex objectForKey:string];
+		NSMutableString *pathString = [[NSMutableString alloc] init];
+		
+		for (NSString *path in pathList) {
+			NSURL *url = [NSURL URLWithString:path];
+			[pathString appendFormat:@"%@;", [url lastPathComponent]];
 		}
-	}
+		
+		NSMutableDictionary *entry = [@{kTableColumnString:string,
+												 kTableColumnFile:pathString,
+												 kTableColumnKey:@""} mutableCopy];
 	
-	[self.tableView reloadData];
+		[self.dataSource addObject:entry];
+	}
 }
 
 - (void)reset {
 	
-	[self.keysDictionary removeAllObjects];
 	self.stringsIndex = nil;
+	[self.dataSource removeAllObjects];
+	
 }
 
 - (NSMutableDictionary *)stringsIndexFromFileIndex:(NSDictionary *)fileIndex {
 	
 	NSMutableDictionary *index = [[NSMutableDictionary alloc] init];
-	
+	if (!fileIndex) NSLog(@"ERROR : FILE INDEX IS NIL ! OMAGAAAAD !");
 	for (NSString *filePath in fileIndex.allKeys) {
 		
 		for (NSString *string in [fileIndex objectForKey:filePath]) {
@@ -282,17 +306,23 @@ static NSString *const kTableColumnKey         = @"Key";
 			else {
 				// Existing string, let's only add the file to which it belongs to.
 				NSMutableArray *referenceFilePaths = [index objectForKey:string];
+				if (!referenceFilePaths) NSLog(@"ERROR: INDEX CONTAINS KEY:%@ BUT HAS NOT REFERENCE FILE PATHS ARRAY", string);
 				if (![referenceFilePaths containsObject:filePath]) {
 					[referenceFilePaths addObject:filePath];
 				}
-				[index setObject:referenceFilePaths forKey:string];
+				if (referenceFilePaths) {
+					[index setObject:referenceFilePaths forKey:string];
+				}
+				else {
+					NSLog(@"EROR : NO REFERENCE FILE PATHS FOUND FOR %@", string);
+				}
 			}
 		}
 	}
 	return index;
 }
 
-// To move to a separate object
+// TODO: move following to a separate object
 
 - (BOOL)createStringsFile {
 	
@@ -305,10 +335,14 @@ static NSString *const kTableColumnKey         = @"Key";
 	if (!handle) return NO;
 	
 	NSMutableString *content = [[NSMutableString alloc] init];
-	for (NSString *key in self.keysDictionary.allKeys) {
+	for (NSDictionary *entry in self.dataSource) {
 		
-		[content appendFormat:@"\"%@\" = \"%@\";\n", [self.keysDictionary objectForKey:key], [key unwrappedContent]];
+		NSString *string = [entry objectForKey:kTableColumnString];
+		NSString *key = [entry objectForKey:kTableColumnKey];
+		
+		[content appendFormat:@"\"%@\" = \"%@\";\n", key, [string unwrappedContent]];
 	}
+	
 	[handle seekToEndOfFile];
 	[handle writeData:[content dataUsingEncoding:NSUTF8StringEncoding]];
 	[handle closeFile];
